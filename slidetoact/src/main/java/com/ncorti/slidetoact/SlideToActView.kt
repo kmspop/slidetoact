@@ -289,6 +289,7 @@ class SlideToActView @JvmOverloads constructor(
 
     /** Public Slide event listeners */
     var onSlideToActAnimationEventListener: OnSlideToActAnimationEventListener? = null
+    var onSlideTriggeredListener: OnSlideTriggeredListener? = null
     var onSlideCompleteListener: OnSlideCompleteListener? = null
     var onSlideResetListener: OnSlideResetListener? = null
     var onSlideUserFailedListener: OnSlideUserFailedListener? = null
@@ -479,7 +480,7 @@ class SlideToActView @JvmOverloads constructor(
         // Text horizontal/vertical positioning (both centered)
         mTextXPosition = mAreaWidth.toFloat() / 2
         mTextYPosition = (mAreaHeight.toFloat() / 2) -
-            (mTextPaint.descent() + mTextPaint.ascent()) / 2
+                (mTextPaint.descent() + mTextPaint.ascent()) / 2
 
         // Make sure the position is recomputed.
         mPosition = 0
@@ -610,7 +611,16 @@ class SlideToActView @JvmOverloads constructor(
                         positionAnimator.start()
                     } else if (mPosition > 0 && mPositionPerc >= mGraceValue) {
                         isEnabled = false // Fully disable touch events
-                        startAnimationComplete()
+                        // TODO min
+                        onSlideTriggeredListener?.let { listener ->
+                            if (listener.onSlideTriggered(this)) {
+                                startAnimationComplete()
+                            } else {
+                                startAnimationReset()
+                            }
+                        } ?: run {
+                            startAnimationComplete()
+                        }
                     } else if (mFlagMoving && mPosition == 0) {
                         // mFlagMoving == true means user successfully grabbed the slider,
                         // but mPosition == 0 means that the slider is released at the beginning
@@ -649,11 +659,11 @@ class SlideToActView @JvmOverloads constructor(
      */
     private fun checkInsideButton(x: Float, y: Float): Boolean {
         return (
-            0 < y &&
-                y < mAreaHeight &&
-                mEffectivePosition < x &&
-                x < (mAreaHeight + mEffectivePosition)
-            )
+                0 < y &&
+                        y < mAreaHeight &&
+                        mEffectivePosition < x &&
+                        x < (mAreaHeight + mEffectivePosition)
+                )
     }
 
     /**
@@ -969,8 +979,8 @@ class SlideToActView @JvmOverloads constructor(
             Log.w(
                 TAG,
                 "bumpVibration is set but permissions are unavailable." +
-                    "You must have the permission android.permission.VIBRATE in " +
-                    "AndroidManifest.xml to use bumpVibration"
+                        "You must have the permission android.permission.VIBRATE in " +
+                        "AndroidManifest.xml to use bumpVibration"
             )
             return
         }
@@ -1036,12 +1046,24 @@ class SlideToActView @JvmOverloads constructor(
     }
 
     /**
+     * Event handler for the slide triggered event.
+     * Use this handler to react to slide being triggered before transitioning to completed state
+     */
+    interface OnSlideTriggeredListener {
+        /**
+         * Called when the user performed the slide.
+         * @return true if the state should go to completed, false to reset
+         */
+        fun onSlideTriggered(view: SlideToActView): Boolean
+    }
+
+    /**
      * Event handler for the slide complete event.
      * Use this handler to react to slide event
      */
     interface OnSlideCompleteListener {
         /**
-         * Called when user performed the slide
+         * Called when slide has transitioned to completed state
          * @param view The SlideToActView who created the event
          */
         fun onSlideComplete(view: SlideToActView)
