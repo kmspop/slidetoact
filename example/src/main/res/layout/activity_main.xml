@@ -26,6 +26,13 @@
             android:elevation="6dp"
             app:text="Sample SlideToActView" />
 
+        <Switch
+            android:id="@+id/trigger_switch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="10dp"
+            android:text="Trigger success"/>
+
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

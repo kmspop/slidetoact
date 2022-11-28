@@ -3,15 +3,21 @@ package com.ncorti.slidetoact.example;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
+
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Switch;
 import android.widget.TextView;
 
 import com.ncorti.slidetoact.SlideToActView;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+
+    private SlideToActView slideToActView;
+    private Switch triggerSwitch;
 
     @SuppressLint("SetTextI18n")
     @Override
@@ -20,6 +26,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_main);
 
         ((TextView) findViewById(R.id.welcome_text)).setText("Welcome 😁");
+
+        triggerSwitch = findViewById(R.id.trigger_switch);
+        slideToActView = findViewById(R.id.welcome_slider);
+        slideToActView.setOnSlideTriggeredListener(new SlideToActView.OnSlideTriggeredListener() {
+            @Override
+            public boolean onSlideTriggered(@NonNull SlideToActView view) {
+                return triggerSwitch.isChecked();
+            }
+        });
 
         findViewById(R.id.button_area_margin).setOnClickListener(this);
         findViewById(R.id.button_icon_margin).setOnClickListener(this);
@@ -45,7 +60,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.reset) {
-            ((SlideToActView) findViewById(R.id.welcome_slider)).setCompleted(false, true);
+            slideToActView.setCompleted(false, true);
         }
         return super.onOptionsItemSelected(item);
     }
